@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CylinderMaterial : MonoBehaviour
@@ -19,17 +17,4 @@ public class CylinderMaterial : MonoBehaviour
     {
         Destroy(gameObject);
     }
-
-    //private void OnTriggerEnter(Collider other)
-    //{
-    //    if (other.TryGetComponent(out PlayerMaterial _playerMaterial))
-    //    {
-    //        if (_playerMaterial.ColorNumber == _materialNumber)
-    //        {
-
-    //            Destroy(gameObject);
-
-    //        }
-    //    }
-    //}
 }

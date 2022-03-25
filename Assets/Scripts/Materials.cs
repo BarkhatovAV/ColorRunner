@@ -8,7 +8,6 @@ public class Materials : MonoBehaviour
 
     public Material GetMaterial(int numberMaterial)
     {
-        
         return _materials[numberMaterial];
     }
 }
