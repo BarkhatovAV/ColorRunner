@@ -46,12 +46,12 @@ public class FootStepContainer : MonoBehaviour
     public bool IsHeighEnouth(Vector3 obstacle)
     {
         _obstacleHeight = obstacle.y - _obstacleHeightOffset;
-        return _footstepPlaces[_ladder.Count - 1].transform.position.y > _obstacleHeight;
+        return _footstepPlaces[_ladder.Count].transform.position.y > _obstacleHeight;
     }
 
     public Vector3 GetLastFootstepPosition()
     {
-        return _ladder[_ladder.Count - 1].transform.position;
+        return _footstepPlaces[_ladder.Count].transform.position;
     }
 
     public void TakeLadder()
