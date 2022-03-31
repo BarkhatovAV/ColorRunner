@@ -7,11 +7,11 @@ public class FootStepContainer : MonoBehaviour
     [SerializeField] private Transform _transform;
 
     private List<FootStep> _ladder = new List<FootStep>();
+    private List<FootstepPlace> _footstepPlaces = new List<FootstepPlace>();
     private Material _currentMaterial;
     private Transform _startParent;
     private Vector3 _startLocalPosition;
     private float _obstacleHeight;
-    private List<FootstepPlace> _footstepPlaces = new List<FootstepPlace>();
     private float _obstacleHeightOffset = 1;
 
     void Start()

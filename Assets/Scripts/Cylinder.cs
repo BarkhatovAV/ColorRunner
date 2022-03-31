@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CylinderMaterial : MonoBehaviour
+public class Cylinder : MonoBehaviour
 {
     [SerializeField] private Materials _gameMaterial;
     [SerializeField] private int _materialNumber;
@@ -10,7 +10,8 @@ public class CylinderMaterial : MonoBehaviour
 
     private void Start()
     {
-        _renderer.material = _gameMaterial.GetMaterial(_materialNumber);
+        _renderer.material = _gameMaterial.GetCylinderMaterial(_materialNumber);
+        
     }
 
     public void Destroy()

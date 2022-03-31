@@ -9,10 +9,14 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask _layerMask;
     [SerializeField] private TouchInput _touchInput;
     [SerializeField] private float _lateralVelocity;
-    [SerializeField] private float _delayForFall;
+    [SerializeField] private float _fallDuration;
     [SerializeField] private float _climbingStairsDuration;
     [SerializeField] private float _forwardVelocity;
+    [SerializeField] private float _decelerationDuration;
+    [SerializeField] private float _smallForwardVelocity;
+    [SerializeField] private float _fallVelocity;
 
+    private float _startForwardVelocity;
     private PlayerAnimation _playerAnimation;
     private Vector3 _moveDirection;
     private float _horizontalMove;
@@ -25,6 +29,7 @@ public class PlayerMovement : MonoBehaviour
     private void Start()
     {
         _playerAnimation = GetComponent<PlayerAnimation>();
+        _startForwardVelocity = _forwardVelocity;
     }
 
     private void OnEnable()
@@ -55,6 +60,12 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public void DecelerateVelocity()
+    {
+        _forwardVelocity = _smallForwardVelocity;
+        StartCoroutine(Decelerate(_decelerationDuration));
+    }
+
     private void OnTouched(float value)
     {
         _horizontalMove += value;
@@ -82,9 +93,18 @@ public class PlayerMovement : MonoBehaviour
 
     public void FallOverObstacle()
     {
+        float y = transform.position.y;
+        transform.DOMoveY(y-0.5f, _fallDuration / 2);
+        transform.DOMoveY(y, _fallDuration / 2).SetDelay(_fallDuration);
         _playerAnimation.StartFallAnimatoin();
-        _isRunning = false;
-        StartCoroutine(StopMovementForFall());
+        _forwardVelocity = _fallVelocity;
+        StartCoroutine(Decelerate(_fallDuration));
+    }
+
+    private IEnumerator Decelerate(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        _forwardVelocity = _startForwardVelocity;
     }
 
     private IEnumerator ClimbStairs(Vector3 targetPosition)
@@ -102,12 +122,6 @@ public class PlayerMovement : MonoBehaviour
         }
 
         RiseFinished?.Invoke();
-        _isRunning = true;
-    }
-
-    private IEnumerator StopMovementForFall()
-    {
-        yield return new WaitForSeconds(_delayForFall);
         _isRunning = true;
     }
 }
