@@ -4,17 +4,18 @@ using UnityEngine;
 public class FootStepContainer : MonoBehaviour
 {
     [SerializeField] private FootStep _footStep;
-    [SerializeField] private Transform _transform;
+    [SerializeField] private Transform _newParentTransformForFootsteps;
 
-    private List<FootStep> _ladder = new List<FootStep>();
+    private List<FootStep> _stairs = new List<FootStep>();
     private List<FootstepPlace> _footstepPlaces = new List<FootstepPlace>();
     private Material _currentMaterial;
     private Transform _startParent;
     private Vector3 _startLocalPosition;
     private float _obstacleHeight;
-    private float _obstacleHeightOffset = 1;
+    
+    public int FootstepsCount => _stairs.Count;
 
-    void Start()
+    private void Start()
     {
         for (int i = 0; i < transform.childCount; i++)
         {
@@ -27,17 +28,16 @@ public class FootStepContainer : MonoBehaviour
 
     public void CreateFootStep()
     {
-        FootStep footStep = Instantiate(_footStep, Vector3.zero, Quaternion.identity, _footstepPlaces[_ladder.Count].transform);
-
+        FootStep footStep = Instantiate(_footStep, Vector3.zero, Quaternion.identity, _footstepPlaces[_stairs.Count].transform);
         footStep.SetMaterial(_currentMaterial);
-        _ladder.Add(footStep);
+        _stairs.Add(footStep);
     }
 
     public void SetMaterial(Material material)
     {
         _currentMaterial = material;
 
-        foreach (FootStep footStep in _ladder)
+        foreach (FootStep footStep in _stairs)
         {
             footStep.SetMaterial(_currentMaterial);
         }
@@ -45,19 +45,20 @@ public class FootStepContainer : MonoBehaviour
 
     public bool IsHeighEnouth(Vector3 obstacle)
     {
-        _obstacleHeight = obstacle.y - _obstacleHeightOffset;
-        return _footstepPlaces[_ladder.Count].transform.position.y > _obstacleHeight;
+        float obstacleHeightOffset = 1;
+        _obstacleHeight = obstacle.y - obstacleHeightOffset;
+        return _footstepPlaces[_stairs.Count].transform.position.y > _obstacleHeight;
     }
 
     public Vector3 GetLastFootstepPosition()
     {
-        return _footstepPlaces[_ladder.Count].transform.position;
+        return _footstepPlaces[_stairs.Count].transform.position;
     }
 
-    public void TakeLadder()
+    public void TransferStairsToPlayer()
     {
         int footstepQuantity = 0;
-        int footstepCount = _ladder.Count;
+        int footstepCount = _stairs.Count;
 
         for (int footstepNumber = footstepCount - 1; footstepNumber > 0; footstepNumber--)
         {
@@ -76,35 +77,37 @@ public class FootStepContainer : MonoBehaviour
 
         for (int footstep = 0; footstep <= footstepQuantity; footstep++)
         {
-            _ladder[footstep].transform.SetParent(_footstepPlaces[footstep].transform);
+            _stairs[footstep].transform.SetParent(_footstepPlaces[footstep].transform);
         }
     }
 
-    public void CutOffLadder()
+    public void RemoveAllFootsteps()
     {
-        transform.SetParent(_transform);
+        for (int footstepCount = _stairs.Count; footstepCount > 0 ; footstepCount--)
+        {
+            _stairs[_stairs.Count - 1].ThrowWithForce();
+            _stairs[_stairs.Count - 1].transform.SetParent(_newParentTransformForFootsteps);
+            _stairs.RemoveAt(_stairs.Count - 1);
+        }
+    }
+
+    public void TransferStairsToNewParent()
+    {
+        transform.SetParent(_newParentTransformForFootsteps);
     }
 
     public void RemoveLastFootStep()
     {
-        if (_ladder.Count > 0)
+        if (_stairs.Count > 0)
         {
-            RemoveFootStep(_ladder.Count - 1);
+            RemoveFootStep(_stairs.Count - 1);
         }
     }
 
     public void RemoveFootStep(int footStepNumber)
     {
-        _ladder[footStepNumber].Throw();
-        _ladder[footStepNumber].transform.SetParent(_transform);
-        _ladder.RemoveAt(footStepNumber);
-    }
-
-    public void RemoveAllFootsteps()
-    {
-        for (int footstepCount = _ladder.Count; footstepCount > 0 ; footstepCount--)
-        {
-            RemoveLastFootStep();
-        }
+        _stairs[footStepNumber].ThrowWithoutForce();
+        _stairs[footStepNumber].transform.SetParent(_newParentTransformForFootsteps);
+        _stairs.RemoveAt(footStepNumber);
     }
 }

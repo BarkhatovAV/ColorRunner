@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -5,7 +6,8 @@ public class Player : MonoBehaviour
     [SerializeField] private FootStepContainer _footStepContainer;
     [SerializeField] private PlayerMaterial _playerMaterial;
     [SerializeField] private PlayerMovement _playerMovement;
-    [SerializeField]  private PlayerCollision _playerCollision;
+    [SerializeField] private PlayerCollision _playerCollision;
+    [SerializeField] private float _delayBeforeFalling;
 
     private void OnEnable()
     {
@@ -28,20 +30,20 @@ public class Player : MonoBehaviour
     private void OnCollisedAnObstacle(Obstacle obstacle)
     {
         _footStepContainer.RemoveAllFootsteps();
-        _playerMovement.FallOverObstacle();
+
+        StartCoroutine(Fall());
     }
 
     private void OnCollisedAnLifting(Lifting lifting)
     {
-        
         if (_footStepContainer.IsHeighEnouth(lifting.TargetPosition))
         {
-            _footStepContainer.CutOffLadder();
+            _footStepContainer.TransferStairsToNewParent();
             _playerMovement.ClimbStairTo(lifting.TargetPosition);
         }
         else
         {
-            _footStepContainer.CutOffLadder();
+            _footStepContainer.TransferStairsToNewParent();
             _playerMovement.ClimbStairWithFall(lifting.TargetPosition, _footStepContainer.GetLastFootstepPosition());
         }
     }
@@ -55,8 +57,11 @@ public class Player : MonoBehaviour
         }
         else
         {
-            _playerMovement.DecelerateVelocity();
-            _footStepContainer.RemoveLastFootStep();
+            if(_footStepContainer.FootstepsCount > 0)
+            {
+                _playerMovement.DecelerateVelocity();
+                _footStepContainer.RemoveLastFootStep();
+            }
         }
     }
 
@@ -67,7 +72,13 @@ public class Player : MonoBehaviour
 
     private void OnRiseFinished()
     {
-        _footStepContainer.TakeLadder();
+        _footStepContainer.TransferStairsToPlayer();
+    }
+
+    private IEnumerator Fall()
+    {
+        yield return new WaitForSeconds(_delayBeforeFalling);
+        _playerMovement.FallOverObstacle();
     }
 }
 

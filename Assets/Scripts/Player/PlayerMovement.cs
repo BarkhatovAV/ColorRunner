@@ -1,9 +1,9 @@
 using System.Collections;
 using UnityEngine;
 using DG.Tweening;
-using UnityEngine.Events;
+using System;
 
-[RequireComponent(typeof(PlayerAnimation))]
+[RequireComponent(typeof(PlayerAnimator))]
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private LayerMask _layerMask;
@@ -15,20 +15,23 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _decelerationDuration;
     [SerializeField] private float _smallForwardVelocity;
     [SerializeField] private float _fallVelocity;
+    [SerializeField] private float durationOfReductionSpeedBeforeFalling;//
 
+    private float currentTime = 0;//
     private float _startForwardVelocity;
-    private PlayerAnimation _playerAnimation;
+    private PlayerAnimator _playerAnimation;
     private Vector3 _moveDirection;
     private float _horizontalMove;
     private float _maxDistant = 1000f;
-    private float _fallOffset = 0.6f;
     private bool _isRunning = true;
 
-    public event UnityAction RiseFinished;
+
+    public event Action RiseFinished;
+    public event Action FellDownStairs;
 
     private void Start()
     {
-        _playerAnimation = GetComponent<PlayerAnimation>();
+        _playerAnimation = GetComponent<PlayerAnimator>();
         _startForwardVelocity = _forwardVelocity;
     }
 
@@ -63,7 +66,7 @@ public class PlayerMovement : MonoBehaviour
     public void DecelerateVelocity()
     {
         _forwardVelocity = _smallForwardVelocity;
-        StartCoroutine(Decelerate(_decelerationDuration));
+        StartCoroutine(RestoreStartSpeed(_decelerationDuration));
     }
 
     private void OnTouched(float value)
@@ -74,34 +77,52 @@ public class PlayerMovement : MonoBehaviour
     public void ClimbStairTo(Vector3 targetPosition)
     {
         StartCoroutine(ClimbStairs(targetPosition));
+        _playerAnimation.StartClimbAnimation();
     }
 
     public void ClimbStairWithFall(Vector3 targetPosition, Vector3 lastFootstepPosition)
     {
         _isRunning = false;
-
-        Vector3 startPosition = transform.position;
-        startPosition.y -= _fallOffset;
+        _playerAnimation.StartClimbAnimation();
+        float fallOffsetY = 0.6f;
+        float fallOffsetZ = 3f;
+        
+        Vector3 targetPositionForFall = new Vector3(transform.position.x, transform.position.y - fallOffsetY, transform.position.z - fallOffsetZ);
+        
         float currentClimbingStairsDuration = _climbingStairsDuration / (targetPosition.y / lastFootstepPosition.y);
         transform.DOMove(new Vector3(transform.position.x, lastFootstepPosition.y, lastFootstepPosition.z),currentClimbingStairsDuration );
 
-        float fallFromStairsDuration = currentClimbingStairsDuration / (targetPosition.y / lastFootstepPosition.y);
-        transform.DOMove(startPosition, fallFromStairsDuration).SetDelay(currentClimbingStairsDuration);
-
-        _playerAnimation.PlayFallBackAimation(currentClimbingStairsDuration);
+        float fallFromStairsDuration = currentClimbingStairsDuration * (targetPosition.y / lastFootstepPosition.y);
+        transform.DOMove(targetPositionForFall, fallFromStairsDuration).SetDelay(currentClimbingStairsDuration);
+        StartCoroutine(FallDownStairs(currentClimbingStairsDuration));
     }
 
     public void FallOverObstacle()
     {
-        float y = transform.position.y;
-        transform.DOMoveY(y-0.5f, _fallDuration / 2);
-        transform.DOMoveY(y, _fallDuration / 2).SetDelay(_fallDuration);
+        float loweringDuratoin = _fallDuration / 4;
+        float liftingDuration = _fallDuration / 8;
+        float loweringDistance = 0.65f;
+        float positionY = transform.position.y;
+        transform.DOMoveY(positionY - loweringDistance, loweringDuratoin).SetDelay(loweringDuratoin) ;
+        transform.DOMoveY(positionY, liftingDuration).SetDelay(_fallDuration);
         _playerAnimation.StartFallAnimatoin();
-        _forwardVelocity = _fallVelocity;
-        StartCoroutine(Decelerate(_fallDuration));
+
+        StartCoroutine(ReduceSpeedBeforeFalling());
+        StartCoroutine(RestoreStartSpeed(_fallDuration));
     }
 
-    private IEnumerator Decelerate(float duration)
+    private IEnumerator ReduceSpeedBeforeFalling()
+    {
+        while(currentTime < durationOfReductionSpeedBeforeFalling)
+        {
+            currentTime += Time.deltaTime;
+            float normalizedTime = currentTime / durationOfReductionSpeedBeforeFalling;
+            _forwardVelocity = Mathf.Lerp(_forwardVelocity, _fallVelocity, normalizedTime);
+            yield return null;
+        }
+    }
+
+    private IEnumerator RestoreStartSpeed(float duration)
     {
         yield return new WaitForSeconds(duration);
         _forwardVelocity = _startForwardVelocity;
@@ -123,5 +144,15 @@ public class PlayerMovement : MonoBehaviour
 
         RiseFinished?.Invoke();
         _isRunning = true;
+        _playerAnimation.EndClimbAnimation();
+    }
+
+    private IEnumerator FallDownStairs(float climbingStairsDuration)
+    {
+        yield return new WaitForSeconds(climbingStairsDuration);
+
+        _playerAnimation.StartFallBackAnimatoin();
+        RiseFinished?.Invoke();
+        FellDownStairs?.Invoke();
     }
 }

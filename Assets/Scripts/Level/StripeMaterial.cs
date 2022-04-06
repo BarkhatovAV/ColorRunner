@@ -16,7 +16,6 @@ public class StripeMaterial : MonoBehaviour
         if (other.TryGetComponent(out PlayerMaterial _playerMaterial))
         {
             _playerMaterial.ChangeMaterial(_materialNumber);
-
         }
     }
 }
