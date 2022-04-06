@@ -9,18 +9,18 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask _layerMask;
     [SerializeField] private TouchInput _touchInput;
     [SerializeField] private float _lateralVelocity;
+    [SerializeField] private float _forwardVelocity;
+    [SerializeField] private float _wrongCylinderForwardVelocity;
+    [SerializeField] private float _fallVelocity;
     [SerializeField] private float _fallDuration;
     [SerializeField] private float _climbingStairsDuration;
-    [SerializeField] private float _forwardVelocity;
     [SerializeField] private float _decelerationDuration;
-    [SerializeField] private float _smallForwardVelocity;
-    [SerializeField] private float _fallVelocity;
-    [SerializeField] private float durationOfReductionSpeedBeforeFalling;//
-
-    private float currentTime = 0;//
-    private float _startForwardVelocity;
+    
     private PlayerAnimator _playerAnimation;
     private Vector3 _moveDirection;
+    private float _durationOfReductionSpeedBeforeFalling = 0.9f;
+    private float _currentTime = 0;
+    private float _startForwardVelocity;
     private float _horizontalMove;
     private float _maxDistant = 1000f;
     private bool _isRunning = true;
@@ -65,7 +65,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void DecelerateVelocity()
     {
-        _forwardVelocity = _smallForwardVelocity;
+        _forwardVelocity = _wrongCylinderForwardVelocity;
         StartCoroutine(RestoreStartSpeed(_decelerationDuration));
     }
 
@@ -113,10 +113,10 @@ public class PlayerMovement : MonoBehaviour
 
     private IEnumerator ReduceSpeedBeforeFalling()
     {
-        while(currentTime < durationOfReductionSpeedBeforeFalling)
+        while(_currentTime < _durationOfReductionSpeedBeforeFalling)
         {
-            currentTime += Time.deltaTime;
-            float normalizedTime = currentTime / durationOfReductionSpeedBeforeFalling;
+            _currentTime += Time.deltaTime;
+            float normalizedTime = _currentTime / _durationOfReductionSpeedBeforeFalling;
             _forwardVelocity = Mathf.Lerp(_forwardVelocity, _fallVelocity, normalizedTime);
             yield return null;
         }
