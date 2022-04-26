@@ -11,7 +11,6 @@ public class Cylinder : MonoBehaviour
     private void Start()
     {
         _renderer.material = _gameMaterial.GetCylinderMaterial(_materialNumber);
-        
     }
 
     public void Destroy()

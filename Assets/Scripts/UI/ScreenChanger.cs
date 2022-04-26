@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class ScreenChanger : MonoBehaviour
@@ -5,6 +6,7 @@ public class ScreenChanger : MonoBehaviour
     [SerializeField] private GameOverScreen _gameOverScreen;
     [SerializeField] private PlayerMovement _playerMovement;
 
+    private float _delayBeforeOpeningGameOverScreen = 1.8f;
     private void OnEnable()
     {
         _playerMovement.FellDownStairs += OnFellDownStairs;
@@ -17,6 +19,12 @@ public class ScreenChanger : MonoBehaviour
 
     private void OnFellDownStairs()
     {
+        StartCoroutine(OpenGameOverScreen());
+    }
+
+    private IEnumerator OpenGameOverScreen()
+    {
+        yield return new WaitForSeconds(_delayBeforeOpeningGameOverScreen);
         _gameOverScreen.Open();
     }
 }

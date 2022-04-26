@@ -45,7 +45,7 @@ public class FootStepContainer : MonoBehaviour
 
     public bool IsHeighEnouth(Vector3 obstacle)
     {
-        float obstacleHeightOffset = 1;
+        float obstacleHeightOffset = 0.35f;
         _obstacleHeight = obstacle.y - obstacleHeightOffset;
         return _footstepPlaces[_stairs.Count].transform.position.y > _obstacleHeight;
     }

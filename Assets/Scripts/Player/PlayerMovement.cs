@@ -85,28 +85,29 @@ public class PlayerMovement : MonoBehaviour
         _isRunning = false;
         _playerAnimation.StartClimbAnimation();
         float fallOffsetY = 0.6f;
-        float fallOffsetZ = 3f;
+        float fallOffsetZ = 3.5f;
         
         Vector3 targetPositionForFall = new Vector3(transform.position.x, transform.position.y - fallOffsetY, transform.position.z - fallOffsetZ);
         
         float currentClimbingStairsDuration = _climbingStairsDuration / (targetPosition.y / lastFootstepPosition.y);
-        transform.DOMove(new Vector3(transform.position.x, lastFootstepPosition.y, lastFootstepPosition.z),currentClimbingStairsDuration );
+        float climbingStairsOffsetZ = 0.4f;
+        transform.DOMove(new Vector3(transform.position.x, lastFootstepPosition.y, lastFootstepPosition.z - climbingStairsOffsetZ),currentClimbingStairsDuration );
 
-        float fallFromStairsDuration = currentClimbingStairsDuration * (targetPosition.y / lastFootstepPosition.y);
-        transform.DOMove(targetPositionForFall, fallFromStairsDuration).SetDelay(currentClimbingStairsDuration);
+        transform.DOMove(targetPositionForFall, currentClimbingStairsDuration).SetDelay(currentClimbingStairsDuration);
         StartCoroutine(FallDownStairs(currentClimbingStairsDuration));
     }
 
     public void FallOverObstacle()
     {
-        float loweringDuratoin = _fallDuration / 4;
-        float liftingDuration = _fallDuration / 8;
+        float loweringDuratoin = 0.5f;
+        float liftingDuration = 0.05f;
         float loweringDistance = 0.65f;
         float positionY = transform.position.y;
         transform.DOMoveY(positionY - loweringDistance, loweringDuratoin).SetDelay(loweringDuratoin) ;
-        transform.DOMoveY(positionY, liftingDuration).SetDelay(_fallDuration);
+        transform.DOMoveY(positionY, liftingDuration).SetDelay(_fallDuration-0.07f);
         _playerAnimation.StartFallAnimatoin();
 
+        _currentTime = 0;
         StartCoroutine(ReduceSpeedBeforeFalling());
         StartCoroutine(RestoreStartSpeed(_fallDuration));
     }
@@ -143,6 +144,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         RiseFinished?.Invoke();
+
         _isRunning = true;
         _playerAnimation.EndClimbAnimation();
     }
