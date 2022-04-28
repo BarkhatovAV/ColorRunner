@@ -100,11 +100,12 @@ public class PlayerMovement : MonoBehaviour
     public void FallOverObstacle()
     {
         float loweringDuratoin = 0.5f;
-        float liftingDuration = 0.05f;
+        float riseDuration = 0.2f;
         float loweringDistance = 0.65f;
         float positionY = transform.position.y;
+        float delayBeforeRise = 0.07f;
         transform.DOMoveY(positionY - loweringDistance, loweringDuratoin).SetDelay(loweringDuratoin) ;
-        transform.DOMoveY(positionY, liftingDuration).SetDelay(_fallDuration-0.07f);
+        transform.DOMoveY(positionY, riseDuration).SetDelay(_fallDuration - delayBeforeRise);
         _playerAnimation.StartFallAnimatoin();
 
         _currentTime = 0;
